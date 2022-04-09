@@ -20,6 +20,7 @@ import googlemaps
 import json
 
 class Agent:
+    remove_html = re.compile(r'<[^>]+>')
     lastname = False
     prevQuery = ""
     
@@ -209,8 +210,7 @@ class Agent:
             
                 instructions = "Directions to " + closest['name'] + ": "
                 for x in directions['legs'][0]['steps']:
-                    instructions = instructions + x['html_instructions'].replace('<b>', '').replace('</b>', '').replace('<div style="font-size:0.9em">', '. ').replace('</div>', '') + ". "
-            
+                    instructions = instructions + (re.sub(self.remove_html, ' ', x['html_instructions'])).replace('/', '').rstrip() + ". "
                 self.address = ""
                 
                 return instructions
