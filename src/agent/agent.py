@@ -181,7 +181,7 @@ class Agent:
 
 
     def direction(self, query, base):
-        directionQuery = re.split("directions to |where is |location of |the nearest ", query.lower().rstrip()) 
+        directionQuery = re.split("directions to| directions for |where is |location of |the nearest |the closest ", query.lower().rstrip()) 
         
         if len(directionQuery) > 1 or self.address == "pending":
             try:
