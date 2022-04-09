@@ -6,7 +6,7 @@ class SpellCheck(AgentPlugin):
     def parse(self, query):
         spell = spellchecker.SpellChecker()
         spell.word_frequency.load_words(['covid'])
-        spell.unknown(['COVID', 'covid','coronavirus',"covid-19"])
+        spell.unknown(['COVID', 'covid','coronavirus',"covid-19", "wikipedia"])
         wordList = re.findall(r'\w+', query)
         pattern = re.compile(r"(.)\1{2,}")
         
