@@ -57,15 +57,15 @@ class Agent:
         ####TODODODO: Add all of the sections, and return Dr phils smart answer to the query all 3
         
         base = chat(check)
-        base = self.sentimentAnalysis(sentiment, base)
-        base = self.NER(ne_rec, query, base)
-        base = self.wikiSearch(check, base)
         
         #To turn off spellcheck when we're entering an address
         if self.address == "pending":
             base = self.direction(query, base)
         else:
             base = self.direction(check, base)
+        base = self.sentimentAnalysis(sentiment, base)
+        base = self.NER(ne_rec, query, base)
+        base = self.wikiSearch(check, base)
         
         return base 
 
@@ -143,7 +143,7 @@ class Agent:
     
     
     def wikiSearch(self, query, base):
-        searchQuery = re.split("look up |search for |wikipedia for", query.lower().rstrip())
+        searchQuery = re.split("look up |search for |wikipedia for |wikipedia ", query.lower().rstrip())
         
         if len(searchQuery) > 1 or self.searching:
             try:
