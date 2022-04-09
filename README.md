@@ -16,7 +16,8 @@ Jordan Ribbink
 
 Nathan Wright
 
-## Project Repo: 
+## Project Repo:
+
 https://github.com/cosc310-project/chatbot-app/tree/dev
 
 ## Project Description and Purpose
@@ -323,3 +324,60 @@ With a bot as complex as ours, there are a number of different functionalities t
 3. Extract get_synonymous_sentences (found in src/agents.py) to get sentences that are "one synonym away" from the input sentence.
 4. Extract config/dataset.json for a basic map from symptoms to diagnoses to be used in a similar doctor-like or other healthcare-oriented program.
 5. Extract the functions to train the neural network (from util/trainer.py) based on all the synonyms for a given word.
+
+# Assignment 3 - Nathan Wright's Modifications:
+
+All desribed modifications in this document from this point forward were developped and implemented by Nathan Wright for the individual assignment.
+
+### Wikipedia Searching - Wikipedia API:
+
+This new feature makes use of the wikipedia API. The user can ask the bot to search for and summarize a wikipedia page using the keywords:
+
+```bash
+...search for "query"
+...look up "query"
+...wikipedia for "query"
+```
+
+For the bot to work best the query should be the last part of the sentence. This feature allows the user to look up medical information
+without the need for scrolling through a wikipedia page themselves. There's also a check to see if the query is health related or not. If the bot thinks the query is not health related it will ask for user confirmation. Unfortunately, wikipedia does not tag their meaning the bot must rely on page categories. Thus this aspect of the wikipedia search feature can be unreliable.
+
+Here's a short example of the feature.
+
+![wikiSearch](/assets/examples/SEARCH.PNG 'Wikipedia Search Example')
+
+(The image can be found at ./assets/examples/SEARCH.PNG if there are any issues.)
+
+### Directions to a location - Google Maps API (geolocation, geocoding, places, and directions):
+
+This new feature makes use of Googles geolocation, and places API. This feature allows the user to ask for a direction to a specific location within 10km of their specified location. The bot will provide the user with directions to the closest location specified, much like a GPS. This allows the user to ask for directions to their closest clinic, hospital, or other medical facility should they need it. This feature isn't limited to giving directions to just hospitals either.
+
+The user can ask the bot for directions using the keywords:
+
+```bash
+...directions to "location name/description"
+...directions for "location name/description"
+...where is "location name/description"
+...location of "location name/description"
+...the nearest "location name/description"
+...the closest "location name/description"
+```
+
+Afterwards the bot will ask the user for their address. Once the address is entered the bot will provide the user directions to their (most likely) desired location. For simplicities sake the bot assumes the user will be driving.
+
+Here's a short example of the feature.
+
+![wikiSearch](/assets/examples/DIRECT.PNG 'Google Maps Directions Example')
+
+(The image can be found at ./assets/examples/DIRECT.PNG if there are any issues.)
+
+### The Functions:
+
+In agent.py two new functions were added:
+
+```bash
+wikiSearch(query, base)
+direction(query, base)
+```
+
+Both wikiSearch and direction take in a query and a base parameter. The query parameter is the users input while the base is the current response the bot believes is appropriate. wikiSearch and direction check to see if any modification is required to the current bots calculated output. If there is editing needed, wikiSearch and direction will modify the bots calculated response. wikiSearch will add any information extracted from wikipedia that the user has requested to search. directions handles calculating the directions the bot should reply with and handling address input as well as confirmation.
