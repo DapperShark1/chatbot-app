@@ -142,19 +142,23 @@ class Agent:
     
     
     def wikiSearch(self, query, base):
-        query = query.rstrip()
         searchQuery = re.split("look up |search for |wikipedia for", query.lower().rstrip())
         
-        if self.searching and "yes" in query:
-            self.searching = False
-            return wikipedia.summary(wikipedia.page(self.prevQuery), sentences = 2)
-        elif self.searching:
-            self.searching = False
-            return "If there's anything else you need just ask."
-        
-        if len(searchQuery) > 1:
+        if len(searchQuery) > 1 or self.searching:
             try:
+                if self.searching and "yes" in query.lower():
+                    self.searching = False
+                    
+                    searchResult = wikipedia.search(self.prevQuery)[0]
+                    page = wikipedia.page(searchResult, auto_suggest=False)
+                    
+                    return wikipedia.summary(page, sentences = 2)
+                elif self.searching:
+                    self.searching = False
+                    return "If there's anything else you need just ask."
+        
                 self.searching = True
+                
                 searchResult = wikipedia.search(searchQuery[-1])[0]
                 page = wikipedia.page(searchResult, auto_suggest=False)
                 categories = page.categories
@@ -186,13 +190,13 @@ class Agent:
         if len(directionQuery) > 1 or self.address == "pending":
             try:
                 if not self.address:
-                    self.prevQuery = query
+                    self.prevQuery = directionQuery
                     self.address = "pending"
                     return "I'll need to know your address before I can give you directions. Make sure the address is in this format: 9999 Bigtree Street, Kelowna, BC"
                 
                 if self.address == "pending":
                     self.address = query
-                    directionQuery = re.split("directions to |where is |location of |the nearest | the closest", self.prevQuery.lower().rstrip()) 
+                    directionQuery = self.prevQuery 
                     
                 coordinates = self.gmaps.geocode(self.address)[0]['geometry']['location']
                 lat_lng = str(coordinates['lat']) + ", " + str(coordinates['lng'])
