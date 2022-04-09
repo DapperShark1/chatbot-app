@@ -4,6 +4,8 @@ from functools import reduce
 from tabnanny import check
 import nltk
 import re
+
+from numpy import true_divide
 from chat import chat
 from random import randint
 
@@ -13,12 +15,23 @@ from nltk.sentiment.vader import SentimentIntensityAnalyzer
 
 #Wikipedia API
 import wikipedia
+#Google Maps API
+import googlemaps
+import json
 
 class Agent:
     lastname = False
+    prevQuery = ""
+    
+    #Globals for wikiSearch
     searching = False
     isMedical = False
-    prevQuery = ""
+    
+    #Globals for GoogleMaps and directions function
+    APIkey = "AIzaSyBkAMPW5ql7w3zcpHIg8zZVK18qaAFzqyc"
+    gmaps = googlemaps.Client(APIkey)
+    address = ""
+    directing = False
     
     def __init__(self, plugins, nltk_dependencies):
         print("Downloading nltk dependencies")
@@ -28,11 +41,9 @@ class Agent:
         self.plugins = list(map(lambda x: x(), plugins))
 
     def query(self, query) -> str:
-        #return chat(query)
-
-        print(self.plugins)
         #TODO: Spelling Check, call a function within agent to fix the query to realistic words --GABE or whoever gets to it
         check = self.plugins[0].parse(query)
+        print(check)
         #TODO Part of speach tagging --Nathan
         pos_tag = self.plugins[1].parse(query)
         #TODO: Named Entity Recognition: Recognize names given and append
@@ -47,7 +58,13 @@ class Agent:
         base = chat(check)
         base = self.sentimentAnalysis(sentiment, base)
         base = self.NER(ne_rec, query, base)
-        base = self.wikiSearch(check)
+        base = self.wikiSearch(check, base)
+        
+        #To turn off spellcheck when we're entering an address
+        if self.address == "pending":
+            base = self.direction(query, base)
+        else:
+            base = self.direction(check, base)
         
         return base 
 
@@ -74,8 +91,6 @@ class Agent:
                     for l in syn_set.lemmas():
                         name = l.name().replace("_", " ")
                         synonyms.add(name.lower())
-            
-            print(synonyms)
 
             return synonyms
         except:
@@ -126,12 +141,13 @@ class Agent:
     
     
     
-    def wikiSearch(self, query):
-        searchQuery = re.split("look up |search for ", query.lower())
+    def wikiSearch(self, query, base):
+        query = query.rstrip()
+        searchQuery = re.split("look up |search for |wikipedia for", query.lower().rstrip())
         
         if self.searching and "yes" in query:
             self.searching = False
-            return wikipedia.summary(wikipedia.search(self.prevQuery, results = 1), sentences = 3)
+            return wikipedia.summary(wikipedia.page(self.prevQuery), sentences = 2)
         elif self.searching:
             self.searching = False
             return "If there's anything else you need just ask."
@@ -139,26 +155,64 @@ class Agent:
         if len(searchQuery) > 1:
             try:
                 self.searching = True
-            
-                searchResult = wikipedia.search(searchQuery[1], results = 1)
-            
-                categories = wikipedia.page(searchResult).categories
+                searchResult = wikipedia.search(searchQuery[-1])[0]
+                page = wikipedia.page(searchResult, auto_suggest=False)
+                categories = page.categories
             
                 for category in categories:
-                    if "health" in str(category): #Find better ways to check if it's related to medicine
+                    if "health" in category:
                         self.isMedical = True
                         break
                 
                 if self.isMedical:
                     self.isMedical = False
                     self.searching = False
-                    return wikipedia.summary(searchResult, sentences = 3)
+                    return wikipedia.summary(page, sentences = 2)
                 else:
-                    self.prevQuery = query
+                    self.prevQuery = searchQuery[-1]
                     return "I don't think that's relevant to anybodies health. Would you like me to try and answer anyway?"
             except:
                 self.searching = False
                 self.isMedical = False
                 return "Sorry I couldn't find what you were looking for. Try rewording what you want to search for."
         else:
-            return query
+            return base
+        
+
+
+    def direction(self, query, base):
+        directionQuery = re.split("directions to |where is |location of |the nearest ", query.lower().rstrip()) 
+        
+        if len(directionQuery) > 1 or self.address == "pending":
+            try:
+                if not self.address:
+                    self.prevQuery = query
+                    self.address = "pending"
+                    return "I'll need to know your address before I can give you directions. Make sure the address is in this format: 9999 Bigtree Street, Kelowna, BC"
+                
+                if self.address == "pending":
+                    self.address = query
+                    directionQuery = re.split("directions to |where is |location of |the nearest | the closest", self.prevQuery.lower().rstrip()) 
+                    
+                coordinates = self.gmaps.geocode(self.address)[0]['geometry']['location']
+                lat_lng = str(coordinates['lat']) + ", " + str(coordinates['lng'])
+            
+                closest = self.gmaps.places(query = directionQuery[-1], location = lat_lng, radius = 10000)['results'][0]
+                closest_id = closest['place_id']
+            
+                directions = self.gmaps.directions(origin = self.address, destination = 'place_id:' + closest_id, mode = "driving")[0]
+                print(directions['legs'][0]['steps'])
+            
+                instructions = "Directions to " + closest['name'] + ": "
+                for x in directions['legs'][0]['steps']:
+                    instructions = instructions + x['html_instructions'].replace('<b>', '').replace('</b>', '').replace('<div style="font-size:0.9em">', '. ').replace('</div>', '') + ". "
+            
+                self.address = ""
+                
+                return instructions
+            except:
+                self.address = ""
+                return "Sorry I had some trouble getting you directions. If you want me to try again just ask."
+        else:
+            return base   
+        
