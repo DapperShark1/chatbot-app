@@ -350,7 +350,7 @@ Here's a short example of the feature.
 
 ### Directions to a location - Google Maps API (geolocation, geocoding, places, and directions):
 
-This new feature makes use of Googles geolocation, and places API. This feature allows the user to ask for a direction to a specific location within 10km of their specified location. The bot will provide the user with directions to the closest location specified, much like a GPS. This allows the user to ask for directions to their closest clinic, hospital, or other medical facility should they need it. This feature isn't limited to giving directions to just hospitals either.
+This new feature makes use of Google's geolocation, and places API. This feature allows the user to ask for a direction to a specific location within 10km of their specified location. The bot will provide the user with directions to the closest location specified, much like a GPS. This allows the user to ask for directions to their closest clinic, hospital, or other medical facility should they need it. This feature isn't limited to giving directions to just hospitals either.
 
 The user can ask the bot for directions using the keywords:
 
@@ -363,7 +363,7 @@ The user can ask the bot for directions using the keywords:
 ...the closest "location name/description"
 ```
 
-Afterwards the bot will ask the user for their address. Once the address is entered the bot will provide the user directions to their (most likely) desired location. For simplicities sake the bot assumes the user will be driving.
+Afterwards the bot will ask the user for their address. Once the address is entered the bot will provide the user directions to their (most likely) desired location. For simplicity's sake the bot assumes the user will be driving.
 
 Here's a short example of the feature.
 
@@ -380,4 +380,4 @@ wikiSearch(query, base)
 direction(query, base)
 ```
 
-Both wikiSearch and direction take in a query and a base parameter. The query parameter is the users input while the base is the current response the bot believes is appropriate. wikiSearch and direction check to see if any modification is required to the current bots calculated output. If there is editing needed, wikiSearch and direction will modify the bots calculated response. wikiSearch will add any information extracted from wikipedia that the user has requested to search. directions handles calculating the directions the bot should reply with and handling address input as well as confirmation.
+Both wikiSearch and direction take in a query and a base parameter. The query parameter is the user's input while the base is the current response the bot believes is appropriate. wikiSearch and direction check to see if any modification is required to the current bots calculated output. If there is editing needed, wikiSearch and direction will modify the bots calculated response. wikiSearch will add any information extracted from wikipedia that the user has requested to search. directions handles calculating the directions the bot should reply with and handling address input as well as confirmation.
